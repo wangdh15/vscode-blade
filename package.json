@@ -44,6 +44,11 @@
         "command": "blade.runAllTest",
         "title": "RunAllTest",
         "category": "BLADE"
+      },
+      {
+        "command": "blade.dumpComDB",
+        "title": "DumpCompDB",
+        "category": "BLADE"
       }
     ]
   },

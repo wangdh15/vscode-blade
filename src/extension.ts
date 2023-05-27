@@ -192,12 +192,14 @@ export function activate(context: vscode.ExtensionContext) {
 	const runTargetId = 'blade.runTarget';
 	const cleanId = 'blade.clean';
 	const runAllTestId = 'blade.runAllTest';
+	const dumpCompDB = 'blade.dumpComDB';
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(configProjId, () => {
 			channel.clear();
 			channel.appendLine('Analysis Project!');
 			getAllTarget();
+			terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
 		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(selectTargetId, () => {
@@ -220,6 +222,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand(runAllTestId, () => {
 		channel.appendLine("Run All Unit Test!");
 		runAllTest();
+	}));
+	context.subscriptions.push(vscode.commands.registerCommand(dumpCompDB, ()=> {
+		channel.appendLine("dump compilation database!");
+		terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
 	}));
 
 	let addStatusBarItem = (command: string, text: string, icon: string) => {
