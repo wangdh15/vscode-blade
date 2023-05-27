@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
 import { QuickPickItem } from 'vscode';
 import * as path from 'path';
+import { config } from 'process';
+import { markAsUntransferable } from 'worker_threads';
 
 interface Target {
 	parentDir: string;
@@ -60,6 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	function getAllTarget() {
 		allTargets.clear();
+		targetPickItems = [];
 		for (const type of allTargetType) {
 			allTargets.set(type, []);
 		}
@@ -122,6 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (select) {
 				channel.appendLine("select target: " + select.label);
 				currentSelectTarget = select;
+				selectedTargetBarHandler.text = "[" + select.label + "]";
 			} else {
 				channel.appendLine("select is undefined");
 			}
@@ -180,33 +184,61 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
+
+	const configProjId = 'blade.configProject';
+	const selectTargetId = 'blade.selectTarget';
+	const buildTargetId = 'blade.buildTarget';
+	const runTargetId = 'blade.runTarget';
+	const cleanId = 'blade.clean';
+	const runAllTestId = 'blade.runAllTest';
+
 	context.subscriptions.push(
-		vscode.commands.registerCommand('blade.configProject', () => {
-			vscode.window.showInformationMessage('Run Config Project!');
+		vscode.commands.registerCommand(configProjId, () => {
+			channel.clear();
+			channel.appendLine('Analysis Project!');
 			getAllTarget();
 		}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('blade.selectTarget', () => {
-		vscode.window.showInformationMessage('Select Target To Build Or Run');
+	context.subscriptions.push(vscode.commands.registerCommand(selectTargetId, () => {
+		channel.appendLine('Select Target To Build Or Run');
 		selectTarget();
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('blade.buildTarget', () => {
-		vscode.window.showInformationMessage("Build Target!");
+	context.subscriptions.push(vscode.commands.registerCommand(buildTargetId, () => {
+		channel.appendLine("Build Target!");
 		buildTarget();
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('blade.runTarget', () => {
-		vscode.window.showInformationMessage("Run Target!");
+	context.subscriptions.push(vscode.commands.registerCommand(runTargetId, () => {
+		channel.appendLine("Run Target!");
 		runTarget();
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand("blade.clean", () => {
-		vscode.window.showInformationMessage("Clean Project");
+	context.subscriptions.push(vscode.commands.registerCommand(cleanId, () => {
+		channel.appendLine("Clean Project");
 		cleanAllTarget();
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand('blade.runAllTest', () => {
-		vscode.window.showInformationMessage("Run All Unit Test!");
+	context.subscriptions.push(vscode.commands.registerCommand(runAllTestId, () => {
+		channel.appendLine("Run All Unit Test!");
 		runAllTest();
 	}));
+
+	let addStatusBarItem = (command: string, text: string, icon: string) => {
+		let myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+		myStatusBarItem.command = command;
+		if (icon === "") {
+			myStatusBarItem.text = text;
+		} else {
+			myStatusBarItem.text = "$(" + icon + ") "  + text;
+		}
+		myStatusBarItem.show();
+		context.subscriptions.push(myStatusBarItem);
+		return myStatusBarItem;
+	};
+
+	addStatusBarItem(configProjId, "Analysis", "tools");
+	let selectedTargetBarHandler = 	addStatusBarItem(selectTargetId, "[NoSelect]", "");
+	addStatusBarItem(buildTargetId, "Build", "gear");
+	addStatusBarItem(runTargetId, "", "run");
+	addStatusBarItem(runAllTestId, "", "run-all");
 }
 
 // This method is called when your extension is deactivated
