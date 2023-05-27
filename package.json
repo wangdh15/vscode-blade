@@ -1,17 +1,32 @@
 {
   "name": "blade",
   "displayName": "BLADE",
-  "description": "",
+  "description": "Extended Blade support in Visual Studio Code",
   "version": "0.0.1",
+  "homepage": "https://github.com/wangdh15/vscode-blade#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wangdh15/vscode-blade"
+  },
   "engines": {
     "vscode": "^1.78.0"
   },
+  "keywords": [
+    "build",
+    "c++",
+    "vscode",
+    "blade",
+    "tools"
+  ],
+  "license": "MIT",
   "categories": [
     "Other"
   ],
+  "publisher": "dhwang",
   "activationEvents": [
     "workspaceContains:BLADE_ROOT"
   ],
+  "icon": "assets/logo.png",
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
