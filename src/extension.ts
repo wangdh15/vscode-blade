@@ -87,6 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
 							const tmpArr: string[] = row.split("=");
 							var tmp: string = tmpArr[tmpArr.length - 1];
 							targetName = tmp.split(",")[0].trim();
+							targetName = targetName.substring(1, targetName.length - 1);
 							let tmpVec = allTargets.get(targetType);
 							if (!tmpVec){
 								channel.appendLine("unknown target type: " +  targetType +  ", ignore it");
