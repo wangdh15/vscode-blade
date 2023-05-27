@@ -13,15 +13,12 @@ interface Target {
 };
 
 interface TargetPickType extends QuickPickItem {
-	targetType: string;
+	parentDir: string;
 };
 // import { parse } from './libs/python-parser';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 
 	let channel = vscode.window.createOutputChannel("Blade");
 
@@ -45,7 +42,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const selecTargetQuickPickOptions: QuickPickOptions = {
 		matchOnDescription: true,
 		matchOnDetail: true,
-		ignoreFocusOut: true
+		ignoreFocusOut: true,
+		placeHolder: "Select the default build target"
 	};
 
 	let currentSelectTarget: TargetPickType;
@@ -100,8 +98,8 @@ export function activate(context: vscode.ExtensionContext) {
 								});
 								targetPickItems.push({
 									label: targetName,
-									description: parentDir,
-									targetType: targetType
+									description: targetType,
+									parentDir:  parentDir
 								});
 							}
 						}
@@ -137,8 +135,8 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		let cmdStr: string;
-		let targetFullPath: string =  currentSelectTarget.description + ":" + currentSelectTarget.label;
-		if (currentSelectTarget.targetType === "test") {
+		let targetFullPath: string =  currentSelectTarget.parentDir + ":" + currentSelectTarget.label;
+		if (currentSelectTarget.description === "test") {
 			cmdStr = "blade test -j 12 " + targetFullPath;
 		} else {
 			 cmdStr = 'blade build --generate-dynamic -j 12 ' + targetFullPath; 
@@ -152,10 +150,10 @@ export function activate(context: vscode.ExtensionContext) {
 			return; 
 		}
 		let tmpp: string;
-		if (currentSelectTarget.description === '') {
+		if (currentSelectTarget.parentDir === '') {
 			tmpp = "/";
 		} else {
-			tmpp = "/" + currentSelectTarget.description + "/";
+			tmpp = "/" + currentSelectTarget.parentDir + "/";
 		}
 		terminal.sendText("build64_release" + tmpp + currentSelectTarget.label);
 		terminal.show();
@@ -167,23 +165,25 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const runAllTest = ()=> {
-		let oddSelectTarget = JSON.stringify(currentSelectTarget);
+		let oddSelectTarget = currentSelectTarget;
+		currentSelectTarget = {
+			label: "",
+			parentDir: "",
+			description: "test"	
+		};
 		let	allTestTargets = allTargets.get("test");
 		if (!allTestTargets) {
 			return;
 		}
-		currentSelectTarget.targetType = "test";
+		currentSelectTarget.description = "test";
 		for (const target of allTestTargets ) {
 			currentSelectTarget.label = target.name;
-			currentSelectTarget.description = target.parentDir;
+			currentSelectTarget.parentDir = target.parentDir;
 			buildTarget();
 		}
-		currentSelectTarget = JSON.parse(oddSelectTarget);
+		currentSelectTarget = oddSelectTarget;
 	};
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
 
 	const configProjId = 'blade.configProject';
 	const selectTargetId = 'blade.selectTarget';
