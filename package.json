@@ -50,6 +50,27 @@
         "title": "DumpCompDB",
         "category": "BLADE"
       }
+    ],
+    "configuration": [
+      {
+        "title": "BLADE",
+        "properties": {
+          "BLADE.CPUNumber": {
+            "type": "number",
+            "default": 12,
+            "description": "how many cpus to build"
+          },
+          "BLADE.DumpCompileDB": {
+            "type": "boolean",
+            "default": true,
+            "description": "whether generate compile_commands.json when analysis project"
+          },
+          "BLADE.ExtraCompileFlags": {
+            "type": "array",
+            "default": []
+          }
+        }
+      }
     ]
   },
   "scripts": {

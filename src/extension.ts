@@ -136,11 +136,12 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		let cmdStr: string;
+		const cpuNum = vscode.workspace.getConfiguration("BLADE").get<number>("CPUNumber");
 		let targetFullPath: string =  currentSelectTarget.parentDir + ":" + currentSelectTarget.label;
 		if (currentSelectTarget.description === "test") {
-			cmdStr = "blade test -j 12 " + targetFullPath;
+			cmdStr = "blade test -j "  + cpuNum + " " + targetFullPath;
 		} else {
-			 cmdStr = 'blade build --generate-dynamic -j 12 ' + targetFullPath; 
+			 cmdStr = 'blade build --generate-dynamic -j ' + cpuNum + " " + targetFullPath; 
 		}
 		terminal.sendText(cmdStr);
 		terminal.show();
@@ -199,7 +200,9 @@ export function activate(context: vscode.ExtensionContext) {
 			channel.clear();
 			channel.appendLine('Analysis Project!');
 			getAllTarget();
-			terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
+			if (vscode.workspace.getConfiguration("BLADE").get<boolean>("DumpCompileDB")) {
+				terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
+			}
 		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(selectTargetId, () => {
