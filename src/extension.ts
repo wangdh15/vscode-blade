@@ -195,15 +195,19 @@ export function activate(context: vscode.ExtensionContext) {
 	const runAllTestId = 'blade.runAllTest';
 	const dumpCompDB = 'blade.dumpComDB';
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand(configProjId, () => {
+	const analysisProj = () => {
 			channel.clear();
 			channel.appendLine('Analysis Project!');
 			getAllTarget();
 			if (vscode.workspace.getConfiguration("BLADE").get<boolean>("DumpCompileDB")) {
 				terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
 			}
-		}));
+	};
+
+	analysisProj();
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand(configProjId, analysisProj));
 
 	context.subscriptions.push(vscode.commands.registerCommand(selectTargetId, () => {
 		channel.appendLine('Select Target To Build Or Run');
