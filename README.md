@@ -14,6 +14,7 @@ vscode extension of [blade-build](https://github.com/chen3feng/blade-build).
 - [ ] make it support vscode of lower version
 - [ ] support add prefix to blade command (such as bear --, environment variable)
 - [ ] select target support fuzzier matching
+- [ ] add more config item other than CPUNumber, --generate-dynamic for example.
 
 ## How to use
 
