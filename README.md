@@ -10,7 +10,7 @@ vscode extension of [blade-build](https://github.com/chen3feng/blade-build).
 
 - [ ] cannot stop running test clearly
 - [ ] when the terminal is killed, no new terminal will be created
-- [ ] support running some command when terminal is created
+- [ ] support running some commands when terminal is created
 - [ ] make it support vscode of lower version
 - [ ] support add prefix to blade command (such as bear --, environment variable)
 - [ ] select target support fuzzier matching
