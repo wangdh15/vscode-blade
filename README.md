@@ -6,7 +6,7 @@ vscode extension of [blade-build](https://github.com/chen3feng/blade-build).
 * `BLADE.CPUNum`
 * `BLADE.DumpCompileDB`
 
-## known issue
+## TODO
 
 - [ ] cannot stop running test clearly
 - [ ] when the terminal is killed, no new terminal will be created
