@@ -136,10 +136,16 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 
-	function checkCurrentTarget(): Boolean {
+	function checkCurrentTarget(toRun: Boolean): Boolean {
 		if (!currentSelectTarget) {
 			vscode.window.showErrorMessage("please select target first!");
 			return false;
+		}
+		if (toRun) {
+			if (currentSelectTarget.description !== "executable" && currentSelectTarget.description !== "test") {
+				vscode.window.showErrorMessage("the type of target " + currentSelectTarget.label + " is " + currentSelectTarget.description + ". you can't run it!");
+				return false;
+			}
 		}
 		return true;
 	}
@@ -158,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const buildTarget = () => {
-		if (!checkCurrentTarget()) {
+		if (!checkCurrentTarget(false)) {
 			return;
 		}
 		let cmdStr: string = "";
@@ -180,9 +186,10 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const runTarget = () => {
-		if (!checkCurrentTarget()) {
+		if (!checkCurrentTarget(true)) {
 			return; 
 		}
+		buildTarget();
 		let tmpp: string;
 		if (currentSelectTarget.parentDir === '') {
 			tmpp = "/";
@@ -193,7 +200,8 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	const cleanAllTarget = () => {
-		checkAndSendText("blade clean");
+		checkAndSendText("rm -rf build64_release");
+		checkAndSendText("rm -rf  blade-bin");
 	};
 
 	const runAllTest = ()=> {
@@ -306,16 +314,16 @@ export function activate(context: vscode.ExtensionContext) {
 		channel.appendLine("Clean Project");
 		cleanAllTarget();
 	}));
-	context.subscriptions.push(vscode.commands.registerCommand(runAllTestId, () => {
-		channel.appendLine("Run All Unit Test!");
-		runAllTest();
-	}));
+	// context.subscriptions.push(vscode.commands.registerCommand(runAllTestId, () => {
+	// 	channel.appendLine("Run All Unit Test!");
+	// 	runAllTest();
+	// }));
 	context.subscriptions.push(vscode.commands.registerCommand(dumpCompDB, ()=> {
 		channel.appendLine("dump compilation database!");
 		checkAndSendText("blade dump --compdb --to-file  compile_commands.json");
 	}));
 
-	let addStatusBarItem = (command: string, text: string, icon: string) => {
+	let addStatusBarItem = (command: string, text: string, icon: string, tips: string) => {
 		let myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 		myStatusBarItem.command = command;
 		if (icon === "") {
@@ -323,19 +331,21 @@ export function activate(context: vscode.ExtensionContext) {
 		} else {
 			myStatusBarItem.text = "$(" + icon + ") "  + text;
 		}
+		myStatusBarItem.tooltip = tips;
 		myStatusBarItem.show();
 		context.subscriptions.push(myStatusBarItem);
 		return myStatusBarItem;
 	};
 
-	addStatusBarItem(configProjId, "Analysis", "tools");
-	let selectedTargetBarHandler = 	addStatusBarItem(selectTargetId, "[NoSelect]", "");
+	addStatusBarItem(configProjId, "Analyse", "tools", "analyse whole project");
+	let selectedTargetBarHandler = 	addStatusBarItem(selectTargetId, "[NoSelect]", "", "select target to build");
 	if (!readAndParseAnalysisHistory()) {
 		analysisProj();
 	}
-	addStatusBarItem(buildTargetId, "Build", "gear");
-	addStatusBarItem(runTargetId, "", "run");
-	addStatusBarItem(runAllTestId, "", "run-all");
+	addStatusBarItem(buildTargetId, "Build", "gear", "build the target");
+	addStatusBarItem(runTargetId, "", "run", "run the target");
+	addStatusBarItem(cleanId, "", "clear-all", "clean the project");
+	// addStatusBarItem(runAllTestId, "", "run-all");
 }
 
 // This method is called when your extension is deactivated
