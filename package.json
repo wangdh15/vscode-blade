@@ -80,9 +80,13 @@
             "default": true,
             "description": "whether generate compile_commands.json when analysis project"
           },
-          "BLADE.ExtraCompileFlags": {
+          "BLADE.CommandPrefix": {
             "type": "array",
-            "default": []
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "description": "Command prefix"
           }
         }
       }

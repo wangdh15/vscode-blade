@@ -161,13 +161,20 @@ export function activate(context: vscode.ExtensionContext) {
 		if (!checkCurrentTarget()) {
 			return;
 		}
-		let cmdStr: string;
+		let cmdStr: string = "";
 		const cpuNum = vscode.workspace.getConfiguration("BLADE").get<number>("CPUNumber");
+		const commandPrefix = vscode.workspace.getConfiguration("BLADE").get<Array<string>>("CommandPrefix");
+		if (commandPrefix)	 {
+			for (const xx of commandPrefix) {
+				cmdStr += xx;
+				cmdStr += " ";
+			}
+		}
 		let targetFullPath: string =  currentSelectTarget.parentDir + ":" + currentSelectTarget.label;
 		if (currentSelectTarget.description === "test") {
-			cmdStr = "blade test -j "  + cpuNum + " " + targetFullPath;
+			cmdStr += "blade test -j "  + cpuNum + " " + targetFullPath;
 		} else {
-			 cmdStr = 'blade build --generate-dynamic -j ' + cpuNum + " " + targetFullPath; 
+			 cmdStr += 'blade build --generate-dynamic -j ' + cpuNum + " " + targetFullPath; 
 		}
 		checkAndSendText(cmdStr);
 	};
