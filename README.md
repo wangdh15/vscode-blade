@@ -10,11 +10,11 @@ vscode extension of [blade-build](https://github.com/chen3feng/blade-build).
 
 - [x] cannot stop running test clearly (remove run all test barItem)
 - [x] when the terminal is killed, no new terminal will be created
-- [ ] support running some commands when terminal is created
-- [ ] make it support vscode of lower version
+- [x] support running some commands when terminal is created
+- [x] make it support vscode of lower version
 - [x] support add prefix to blade command (such as bear --, environment variable)
 - [ ] select target support fuzzier matching
-- [ ] add more config items other than CPUNumber, --generate-dynamic for example
+- [x] add more config items other than CPUNumber, --generate-dynamic for example
 - [x] save the analysis return to file and reload from it when extension activated
 - [ ] support target group
 

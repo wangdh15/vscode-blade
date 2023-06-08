@@ -5,6 +5,7 @@ import { QuickPickOptions } from 'vscode';
 import { QuickPickItem } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { Terminal } from 'vscode';
 
 interface Target {
 	parentDir: string;
@@ -29,7 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
 	let allTargets: Map<string, Array<Target>> = new Map();
 
 	// initialize the terminal
-	let terminal = vscode.window.createTerminal();
+	let terminal = startNewTerminal();
+
 	const folders = vscode.workspace.workspaceFolders;
 	let projectRootPath: string ;
 
@@ -41,10 +43,21 @@ export function activate(context: vscode.ExtensionContext) {
 		terminal.sendText('cd ' + projectRootPath);
 	}
 
+	function startNewTerminal() {
+		let terminal = vscode.window.createTerminal();
+		let commands = vscode.workspace.getConfiguration("BLADE").get<Array<string>>("CommandsWhenStartNewTerminal");
+		if (commands) {
+			for (const command of commands) {
+				terminal.sendText(command);
+			}
+		}
+		return terminal;
+	}
+
 	function checkAndSendText(content: string) {
 		console.log(terminal.exitStatus);
 		if (terminal.exitStatus !== undefined) {
-			terminal = vscode.window.createTerminal();
+			terminal = startNewTerminal();	
 		}
 		if (folders) {
 			terminal.sendText('cd ' + folders[0].uri.fsPath);
