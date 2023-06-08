@@ -4,8 +4,7 @@ import * as vscode from 'vscode';
 import { QuickPickOptions } from 'vscode';
 import { QuickPickItem } from 'vscode';
 import * as path from 'path';
-import { config } from 'process';
-import { markAsUntransferable } from 'worker_threads';
+import * as fs from 'fs';
 
 interface Target {
 	parentDir: string;
@@ -32,10 +31,14 @@ export function activate(context: vscode.ExtensionContext) {
 	// initialize the terminal
 	let terminal = vscode.window.createTerminal();
 	const folders = vscode.workspace.workspaceFolders;
+	let projectRootPath: string ;
+
 	if (!folders) {
 		vscode.window.showErrorMessage("workspaceFolder is undefined!");
+		projectRootPath = "";
 	} else {
-		terminal.sendText('cd ' + folders[0].uri.fsPath);
+		projectRootPath = folders[0].uri.fsPath;
+		terminal.sendText('cd ' + projectRootPath);
 	}
 
 	function checkAndSendText(content: string) {
@@ -60,6 +63,11 @@ export function activate(context: vscode.ExtensionContext) {
 	let currentSelectTarget: TargetPickType;
 
 
+    interface DumpStruct {
+		allTarget: string;
+		selectTarget: TargetPickType;
+	};
+
 	function getParentDir(uri: vscode.Uri):string {
 		const relativePath = vscode.workspace.asRelativePath(uri);
 		let parentDir = path.dirname(relativePath);
@@ -77,6 +85,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		channel.show();
 		vscode.workspace.findFiles("**/BUILD", "**/build64_release/**").then((uris) => {
+			let cnt = 0;
+			const allCnt = uris.length;
 			for (const uri of uris) {
 				vscode.workspace.fs.readFile(uri).then((data) => {
 					const content: string = data.toString();
@@ -116,6 +126,10 @@ export function activate(context: vscode.ExtensionContext) {
 							}
 						}
 					}
+					cnt += 1;
+					if (cnt === allCnt) {
+						dumpAnalysisResult();
+					}
 				});
 			}
 		});
@@ -136,6 +150,7 @@ export function activate(context: vscode.ExtensionContext) {
 				channel.appendLine("select target: " + select.label);
 				currentSelectTarget = select;
 				selectedTargetBarHandler.text = "[" + select.label + "]";
+				dumpAnalysisResult();
 			} else {
 				channel.appendLine("select is undefined");
 			}
@@ -205,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const analysisProj = () => {
 			channel.clear();
+			readAndParseAnalysisHistory();
 			channel.appendLine('Analysis Project!');
 			getAllTarget();
 			if (vscode.workspace.getConfiguration("BLADE").get<boolean>("DumpCompileDB")) {
@@ -212,7 +228,56 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 	};
 
-	analysisProj();
+	function dumpAnalysisResult() {
+			// Create the folder if it doesn't exist
+			const folderPath = path.join(projectRootPath, ".blade");
+    		if (!fs.existsSync(folderPath)) {
+        		fs.mkdirSync(folderPath, { recursive: true });
+    		}
+			const analysisHistory = path.join(folderPath, "analysis_history.json");
+			console.log(allTargets);
+			console.log(JSON.stringify(allTargets));
+			let dumpStruct: DumpStruct = {
+				allTarget: "",
+				selectTarget: currentSelectTarget
+			};
+
+			dumpStruct.allTarget = JSON.stringify(Array.from(allTargets.entries()));
+			console.log(dumpStruct);
+
+			const jsonContent = JSON.stringify(dumpStruct, null, 4);
+			fs.writeFileSync(analysisHistory, jsonContent);
+			channel.appendLine("write the analysis result to disk");
+			channel.appendLine(jsonContent);
+	}
+
+	function readAndParseAnalysisHistory(): boolean {
+		const analysisHistory = path.join(projectRootPath, ".blade", "analysis_history.json");
+		if (!fs.existsSync(analysisHistory)) {
+			return false;
+		} 
+		const fileContent = fs.readFileSync(analysisHistory, 'utf-8');
+		const parsedContent = JSON.parse(fileContent);
+		allTargets = new Map<string, Array<Target>>(JSON.parse(parsedContent.allTarget));
+		currentSelectTarget = parsedContent.selectTarget;
+		console.log(allTargets);
+		console.log(currentSelectTarget);
+		targetPickItems = [];
+		for (const [key, val] of allTargets) {
+			console.log(val);
+			for (const xx of val) {
+				console.log(xx);
+				targetPickItems.push({
+					label: xx.name,
+					description: key,
+					parentDir: xx.parentDir 
+				});
+			}
+		}
+		console.log(targetPickItems);
+		selectedTargetBarHandler.text = "[" + currentSelectTarget.label + "]";
+		return true;
+	}
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(configProjId, analysisProj));
@@ -258,6 +323,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	addStatusBarItem(configProjId, "Analysis", "tools");
 	let selectedTargetBarHandler = 	addStatusBarItem(selectTargetId, "[NoSelect]", "");
+	if (!readAndParseAnalysisHistory()) {
+		analysisProj();
+	}
 	addStatusBarItem(buildTargetId, "Build", "gear");
 	addStatusBarItem(runTargetId, "", "run");
 	addStatusBarItem(runAllTestId, "", "run-all");

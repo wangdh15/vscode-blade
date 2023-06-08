@@ -15,7 +15,7 @@ vscode extension of [blade-build](https://github.com/chen3feng/blade-build).
 - [ ] support add prefix to blade command (such as bear --, environment variable)
 - [ ] select target support fuzzier matching
 - [ ] add more config items other than CPUNumber, --generate-dynamic for example
-- [ ] save the analysis return to file and reload from it when extension activated
+- [x] save the analysis return to file and reload from it when extension activated
 - [ ] support target group
 
 ## How to use
