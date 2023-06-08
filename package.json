@@ -2,14 +2,14 @@
   "name": "blade",
   "displayName": "BLADE",
   "description": "Extended Blade support in Visual Studio Code",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "homepage": "https://github.com/wangdh15/vscode-blade#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/wangdh15/vscode-blade"
   },
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.70.0"
   },
   "keywords": [
     "build",
@@ -53,11 +53,6 @@
       {
         "command": "blade.clean",
         "title": "Clean",
-        "category": "BLADE"
-      },
-      {
-        "command": "blade.runAllTest",
-        "title": "RunAllTest",
         "category": "BLADE"
       },
       {
