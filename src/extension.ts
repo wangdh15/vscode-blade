@@ -37,7 +37,18 @@ export function activate(context: vscode.ExtensionContext) {
 	} else {
 		terminal.sendText('cd ' + folders[0].uri.fsPath);
 	}
-	terminal.sendText("zsh");
+
+	function checkAndSendText(content: string) {
+		console.log(terminal.exitStatus);
+		if (terminal.exitStatus !== undefined) {
+			terminal = vscode.window.createTerminal();
+		}
+		if (folders) {
+			terminal.sendText('cd ' + folders[0].uri.fsPath);
+		}
+		terminal.sendText(content);
+		terminal.show();
+	}
 
 	const selecTargetQuickPickOptions: QuickPickOptions = {
 		matchOnDescription: true,
@@ -143,8 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
 		} else {
 			 cmdStr = 'blade build --generate-dynamic -j ' + cpuNum + " " + targetFullPath; 
 		}
-		terminal.sendText(cmdStr);
-		terminal.show();
+		checkAndSendText(cmdStr);
 	};
 
 	const runTarget = () => {
@@ -157,13 +167,11 @@ export function activate(context: vscode.ExtensionContext) {
 		} else {
 			tmpp = "/" + currentSelectTarget.parentDir + "/";
 		}
-		terminal.sendText("build64_release" + tmpp + currentSelectTarget.label);
-		terminal.show();
+		checkAndSendText("build64_release" + tmpp + currentSelectTarget.label);
 	};
 
 	const cleanAllTarget = () => {
-		terminal.sendText("blade clean");
-		terminal.show();
+		checkAndSendText("blade clean");
 	};
 
 	const runAllTest = ()=> {
@@ -200,7 +208,7 @@ export function activate(context: vscode.ExtensionContext) {
 			channel.appendLine('Analysis Project!');
 			getAllTarget();
 			if (vscode.workspace.getConfiguration("BLADE").get<boolean>("DumpCompileDB")) {
-				terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
+				checkAndSendText("blade dump --compdb --to-file  compile_commands.json");
 			}
 	};
 
@@ -232,7 +240,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 	context.subscriptions.push(vscode.commands.registerCommand(dumpCompDB, ()=> {
 		channel.appendLine("dump compilation database!");
-		terminal.sendText("blade dump --compdb --to-file  compile_commands.json");
+		checkAndSendText("blade dump --compdb --to-file  compile_commands.json");
 	}));
 
 	let addStatusBarItem = (command: string, text: string, icon: string) => {
